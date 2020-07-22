@@ -11,6 +11,7 @@
 
 #include <cerrno>
 #include <ctime>
+#include <chrono>
 #include <mutex>
 #include <iomanip>
 #include <string>
@@ -28,11 +29,15 @@ public:
     }
     static spdlog::filename_t calc_filename(const spdlog::filename_t &filename)
     {
-        std::time_t t = std::time(nullptr);
+        std::chrono::milliseconds ms = 
+            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+
+        std::time_t t = ms.count() / 1000;
+        auto millis = ms.count() % 1000;
         std::ostringstream tmstmp;
         tmstmp << std::put_time(std::localtime(&t), "%Y%m%d%H%M%S");
 
-        return fmt::format(SPDLOG_FILENAME_T("{}.{}"), filename, tmstmp.str());
+        return fmt::format(SPDLOG_FILENAME_T("{}.{}{:0>3}"), filename, tmstmp.str(), millis);
     }    
     spdlog::filename_t filename()
     {
@@ -60,7 +65,7 @@ protected:
 
 private:
     // Rotate files:
-    // log.txt -> log.txt.YYYYmmddHHMMSS
+    // log.txt -> log.txt.YYYYmmddHHMMSSmmm
     void rotate_()
     {
         file_helper_.close();

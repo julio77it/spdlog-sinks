@@ -23,12 +23,19 @@ namespace logger
     }
 }
 
+#include <unistd.h>
+
 int main()
 {
     logger::init();
 
-    uint64_t max_row = 64000;
+    uint64_t max_row = 1024;
 
     for (uint64_t row = 1; row <= max_row; ++row)
+    {
         SPDLOG_INFO("ROW {} / {}", row, max_row);
+
+        if (0 == (row % 7))
+            usleep(1000);
+    }
 }
